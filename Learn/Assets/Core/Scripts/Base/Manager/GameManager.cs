@@ -4,10 +4,13 @@ using UnityEngine;
 
 namespace NEngine.Game
 {
-    public struct GameEnum
+    public enum GameEnum
     {
-        public const string No1 = "dd";
-        public const string No2 = "bb";
+        StartLoading,  //启动加载部分
+        Lobby,         //主大厅
+        Majhong,       //麻将
+        NiuNiu,        //牛牛
+
     }
     public class GameManager
     {
@@ -17,19 +20,16 @@ namespace NEngine.Game
         public GameManager()
         {
             _dic = new Dictionary<string, IGameBase>();
-            _dic.Add(GameEnum.No1, new GameNo1(GameEnum.No1,new No1Loader()));
+            _dic.Add(GameEnum.StartLoading.ToString(), new StartLoading(GameEnum.StartLoading.ToString(), new CommonGLoader(GameEnum.StartLoading)));
+           // _dic.Add(GameEnum.Lobby.ToString(),new )
         }
+        public IGameBase this[string name]{get{ IGameBase gb = null; _dic.TryGetValue(name, out gb); return gb; } }
         public void StartUp(string gameName)
         {
             if (NowRunning != null && NowRunning.Name != gameName)
                 NowRunning.UnLoad();
             _dic.TryGetValue(gameName, out _nowRunning);
-            NowRunning.StartUp(onStartUp);
-        }
-        void onStartUp(bool result)
-        {
-            if (!result)
-                Debug.LogError(string.Format("Game: {0} start up error, error code is {1}",NowRunning.Name,0));
+            NowRunning.StartUp();
         }
     }
 }

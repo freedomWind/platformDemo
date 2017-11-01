@@ -19,7 +19,37 @@ namespace NEngine.Assets
             }
             _configDic.Add(name, config);
         }
-        public AssetConfig assetConfig { get { return _configDic[GameManager.NowRunning.Name]; } }
-
+        public AssetConfig GetAssetConfig(string gamename)
+        {
+            AssetConfig con = null;
+            _configDic.TryGetValue(gamename, out con);
+            return con;
+        }
+        private AssetBundle GetBundle(string assetname)
+        {
+            string now = GameManager.NowRunning.Name;
+            AssetBundle ab = GetAssetConfig(now).GetAssetbundleByAssetname(assetname);
+            if (ab == null)
+            {
+                string[] gnames = System.Enum.GetNames(typeof(GameEnum));
+                for (int i = 0; i < gnames.Length; i++)
+                {
+                    if (gnames[i] == now)
+                        continue;
+                    ab = GetAssetConfig(gnames[i]).GetAssetbundleByAssetname(assetname);
+                    if (ab == null) continue;
+                }
+            }
+            return ab;
+        }
+        public UnityEngine.Object LoadAssetFromBundle(string assetname)
+        {
+          //  try
+           // {
+                AssetBundle ab = GetBundle(assetname);
+                return AssetBundleLoader.LoadObjectFromAssetbundle(ab, assetname);
+        //    }
+      //      catch { return null; }
+        }
     }
 }

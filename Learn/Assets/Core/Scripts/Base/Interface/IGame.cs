@@ -7,7 +7,6 @@ namespace NEngine.Game
     {
         public readonly string Name;   //名称
         public string Desc;            //描述
-        public string Version;         //版本
         
         public IGame(string name)
         {

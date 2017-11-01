@@ -9,15 +9,35 @@ namespace NEngine.Assets
     /// </summary>
     public class AssetConfig
     {
+        public static string getAssetbundleFloderPath(string gName)            //ab包目录
+        {
+            return "";
+        }
+        public static string getAssetConfigPath_local(string gName)             //本地资源配置文件目录
+        {
+            return "";
+        }
+        public static string getAssetConfigPath_ser(string gName)               //服务器端下载存放目录
+        {
+            return "";
+        }
+        public static string getAssetUrl(string gName)                          //服务器端资源地址
+        {
+            return "";
+        }
+
         private string gName;
-        public AssetConfig(string gamename)
+        public AssetConfig(string gamename,AssetVersion aversion,AssetbundleConfig abconfig,PreloadConfig preloadConfig)
         {
             this.gName = gamename;
-            assetVersion = new AssetVersion();
+            this.assetVersion = aversion;
+            this.abConfig = abconfig;
+            this.preloadConfig = preloadConfig;
         }
         AssetVersion assetVersion;
         AssetbundleConfig abConfig;
-        GameAssetConfig assetConfig;
+        PreloadConfig preloadConfig;
+       // GameAssetConfig assetConfig;
 
         /// <summary>
         /// 通过资源路径名得到ab包名
@@ -26,7 +46,27 @@ namespace NEngine.Assets
         /// <returns></returns>
         public string GetAbgNameByAssetname(string assetname)
         {
-            return "";
+            assetname = assetname.ToLower();
+            return abConfig.GetBundlenameByAssetname(assetname);
+        }
+        public AssetBundle GetAssetbundleByAssetname(string assetname)
+        {
+            try
+            {
+                string finalPath = Application.streamingAssetsPath + "/" + GetAbgNameByAssetname(assetname);
+                if (!System.IO.File.Exists(finalPath))
+                    return null;
+                return AssetBundle.LoadFromFile(finalPath);
+            }
+            catch { Debug.LogError(string.Format("assetbundle {0} load error",assetname));  return null; }
+        }
+        public string[] GetPreloadArray()
+        {
+            try
+            {
+                return this.preloadConfig.ToArray();
+            }
+            catch { return null; }
         }
         private AssetBundleManifest _manifest = null;
         public AssetBundleManifest Manifest

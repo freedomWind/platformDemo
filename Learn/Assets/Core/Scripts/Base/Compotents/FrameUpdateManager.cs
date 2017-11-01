@@ -14,7 +14,7 @@ namespace NEngine
             {
                 if (_ins == null)
                 {
-                    _ins = App.Ins.AppMono.AddComponent<FrameUpdateManager>();
+                    _ins = App.Ins.AppMono.gameObject.AddComponent<FrameUpdateManager>();
                 }
                 return _ins;
             }

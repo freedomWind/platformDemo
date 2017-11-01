@@ -1,0 +1,13 @@
+ManifestFileVersion: 0
+CRC: 2557640946
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: res/no1/no1_res/canvas.unity3d
+      Dependencies: {}
+    Info_1:
+      Name: res/no1/no1_res/eventsystem.unity3d
+      Dependencies: {}
+    Info_2:
+      Name: res/no1/no1_res/jjjj.unity3d
+      Dependencies: {}

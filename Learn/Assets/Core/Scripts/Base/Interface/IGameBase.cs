@@ -7,52 +7,43 @@ namespace NEngine.Game
 {
     public abstract class IGameBase :IGame
     {
-        private IGameLoad loader;
+        protected IGameLoad loader;
         public IGameBase(string name,IGameLoad loader) : base(name) { this.loader = loader; RegiestScene(); }
         protected abstract string[] sceneName { get; }             //游戏场景
         /// <summary>
         /// 启动游戏
         /// </summary>
-        /// <param name="callback"></param>
-        public void StartUp(System.Action<bool> callback)
+        public virtual void StartUp()
         {
-            if (loader.CheckGameUpdate())
+            if (loader.isFirstLoad)
             {
-                loader.DoGameUpdate(()=> { StartUp(callback); });
-            }
-            if (loader.CheckAssetsUpdate())
-            {
-                loader.PullAssets(_ =>
+                if (loader.CheckGameUpdate())  //游戏逻辑版本更新
                 {
-                    App.GetMgr<AssetManager>().AddAssetConfig(Name, _);
-                    loader.OnAssetsUpdate();
-                    StartUp(callback);
-                });
+                    loader.DoGameUpdate(() => { StartUp(); });
+                }
+                if (!loader.isAssetsNew)   //资源更新
+                    GameAssetsUpdate();
+                loader.PreLoadAssets();    //预加载
             }
-            loader.PreLoadAssets();
-            callback(loader.Connect());
+            loader.Connect();
             LoadScene(0);
         }
         /// <summary>
-        /// 后台资源初始化
+        ///资源初始化
         /// </summary>
         /// <param name="callback"></param>
-        public void GameBackgroundInit(System.Action callback)
+        public void GameAssetsUpdate()
         {
-            if (loader.CheckGameUpdate())
+            if (!loader.isAssetsNew)
             {
-                loader.DoGameUpdate(()=> { GameBackgroundInit(callback); });
-            }
-            if (loader.CheckAssetsUpdate())
-            {
-                loader.PullAssets(_ =>
+                Debug.Log("资源初始化："+Name);
+                IEnumerable<string> pullist = null;
+                loader.CheckAndUpdateConfig("", null);   //检测和配置文件更新
+                if (loader.CheckAssetsUpdate(out pullist))  //更新资源
                 {
-                    App.GetMgr<AssetManager>().AddAssetConfig(Name, _);
-                    loader.OnAssetsUpdate();
-                    GameBackgroundInit(callback);
-                });
+                    loader.PullAssets(pullist);
+                }
             }
-            callback();
         }
 
         public void UnLoad()
@@ -66,6 +57,7 @@ namespace NEngine.Game
         //加载游戏内场景
         public void LoadScene(int index)
         {
+            Debug.Log("loadScene :"+sceneName[index]);
             if (index < 0 || index > sceneName.Length - 1)
             {
                 Debug.LogError("load scene is out of arry");
@@ -106,8 +98,15 @@ namespace NEngine.Game
         }
         #endregion
     }
+    /// <summary>
+    /// 游戏启动流程
+    /// </summary>
     public abstract class IGameLoad
     {
+        private bool _isAssetsNew = false;
+        private bool _isFirstLoad = true;
+        public bool isFirstLoad { get { return _isFirstLoad; } }
+        public bool isAssetsNew { get { return _isAssetsNew; } }
         public virtual bool CheckGameUpdate() //检查更新(游戏逻辑)
         {
             Debug.Log("检测版本更新");
@@ -117,18 +116,57 @@ namespace NEngine.Game
         {
             Debug.Log("游戏逻辑更新");
         }
-        public virtual bool CheckAssetsUpdate() //游戏资源(游戏资源)
+        public virtual void CheckAndUpdateConfig(string url,System.Action<byte[]> loaderOver) //检测更新配置文件
+        {
+            Debug.Log("资源配置文件更新");
+            AssetBundleLoader.LoadFileFromServerSync(url, loaderOver);
+        }
+        protected AssetConfig LoadLocalConfig(string game)
+        {
+            Debug.Log("资源配置文件loading");
+            string path = Application.streamingAssetsPath + "/CONFIG/" + game;
+            string[] files = System.IO.Directory.GetFiles(path);
+            AssetbundleConfig bundle = null;
+            AssetVersion assetversion = null;
+            PreloadConfig preload = null;
+            string str = "";
+            string name = "";
+            for (int i = 0; i < files.Length; i++)
+            {
+                str = "";
+                using (System.IO.StreamReader sr = new System.IO.StreamReader(files[i]))
+                {
+                    name = Util.GetFileName(files[i]);
+                    str = sr.ReadToEnd();
+                    //str = System.Text.Encoding.UTF8.GetString(System.Text.Encoding.UTF8.GetBytes(str));
+                    if (name == "bundle.config")
+                    {                      
+                        bundle = AssetbundleConfig.FromString(str);
+                    }
+                    else if (name =="assetVersion.config")
+                    {
+                        assetversion = AssetVersion.FromString(str);
+                    }
+                    else if (name == "preload.config")
+                    {
+                        preload = PreloadConfig.FromString(str);
+                    }
+                    sr.Close();
+                }
+                
+            }
+            return new AssetConfig(game, assetversion, bundle, preload);
+        }
+        public virtual bool CheckAssetsUpdate(out IEnumerable<string> updatelist)  //游戏资源(游戏资源)
         {
             Debug.Log("检测资源更新");
+            updatelist = null;
             return false;
         }
-        public virtual void PullAssets(System.Action<AssetConfig> callback)  //拉取资源
+        public virtual void PullAssets(IEnumerable<string> pulllist)  //拉取资源
         {
             Debug.Log("拉取资源");
-        }
-        public virtual void OnAssetsUpdate()  //资源更新回调
-        {
-            Debug.Log("资源更新回调");
+            _isAssetsNew = true;
         }
         public virtual void PreLoadAssets()   //预加载
         {
@@ -137,6 +175,7 @@ namespace NEngine.Game
         public virtual bool Connect()  //连接
         {
             Debug.Log("服务器连接");
+            _isFirstLoad = false;
             return true;
         }
     }

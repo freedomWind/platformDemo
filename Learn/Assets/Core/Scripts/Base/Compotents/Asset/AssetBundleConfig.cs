@@ -5,8 +5,11 @@ namespace NEngine.Assets
 {
     public class AssetbundleConfig
     {
-        public int resourceVersion;
-        Dictionary<string, string> bundleAssetsDic = new Dictionary<string, string>(); //资源名 - 包名
+        public AssetbundleConfig()
+        {
+            bundleAssetsDic = new Dictionary<string, string>();
+        }
+        Dictionary<string, string> bundleAssetsDic;// = new Dictionary<string, string>(); //资源名 - 包名
         public void AddAssetBundle(string assetname, string bundlename)
         {
             assetname = assetname.ToLower();
@@ -33,31 +36,27 @@ namespace NEngine.Assets
         }
         public override string ToString()
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.Append(resourceVersion.ToString() + "|");
-            foreach (KeyValuePair<string, string> kp in bundleAssetsDic)
+            System.Text.StringBuilder sss = new System.Text.StringBuilder();
+            foreach (var tem in bundleAssetsDic)
             {
-                sb.Append(kp.Key + "&" + kp.Value + ",");
+                sss.Append(tem.Key + "&" + tem.Value.ToString() + ",");
             }
-            return sb.ToString();
+            return sss.ToString();
         }
-
-        public static AssetbundleConfig FromStr(string str)
+        public static AssetbundleConfig FromString(string str)
         {
-            AssetbundleConfig abc = new AssetbundleConfig();
-            string[] strs = str.Split('|');
-            if (strs.Length != 2)
-                return null;
-            int.TryParse(strs[0], out abc.resourceVersion);
-            string[] table = strs[1].Split(',');
-            string[] kp;
-            for (int i = 0; i < table.Length; i++)
+            AssetbundleConfig con = new AssetbundleConfig();
+            string[] strs = str.Split(',');
+            for (int i = 0; i < strs.Length; i++)
             {
-                kp = table[i].Split('&');
-                if (kp.Length == 2)
-                    abc.AddAssetBundle(kp[0], kp[1]);
+                if (strs[i] == "") continue;
+                string[] s = strs[i].Split('&');
+                if (s.Length == 2)
+                {
+                    con.AddAssetBundle(s[0], s[1]);
+                }
             }
-            return abc;
+            return con;
         }
     }
 }

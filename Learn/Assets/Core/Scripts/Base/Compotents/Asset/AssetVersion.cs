@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using LitJson;
 using UnityEngine;
 namespace NEngine.Assets
 {
@@ -55,7 +56,7 @@ namespace NEngine.Assets
             updateList = new Dictionary<string, Hash128>();
             if (oldRes == null || newRes == null)
             {
-                Debug.LogError("oldRes or newRes is null");
+           //     Debug.LogError("oldRes or newRes is null");
                 return;
             }
             Debug.Log("newRes.bundlesInfo:" + newRes.bundlesInfo.Count + "  oldRes.bundlesInfo:" + oldRes.bundlesInfo.Count);

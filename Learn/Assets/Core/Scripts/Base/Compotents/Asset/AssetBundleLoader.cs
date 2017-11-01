@@ -7,87 +7,94 @@ namespace NEngine.Assets
 {
     public static class AssetBundleLoader
     {
-        /*
-        public static void LoadAssetsASync(string abfullpath, System.Action<AssetBundle> callback)
+        /// <summary>
+        /// 从文件中加载ab包
+        /// </summary>
+        /// <param name="abfullpath"></param>
+        /// <param name="callback"></param>
+        public static AssetBundle LoadAssetbundle(string abfullpath)
         {
-            if (!File.Exists(abfullpath)) return;
-            LoadAssetbundleSync(abfullpath, callback);
+            if (!File.Exists(abfullpath)) return null;
+            return AssetBundle.LoadFromFile(abfullpath);
         }
-        public static void LoadFileFromServer(string url, System.Action<string> result)
+
+        /// <summary>
+        /// 从ab包里加载出资源
+        /// </summary>
+        /// <param name="ab"></param>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        public static Object LoadObjectFromAssetbundle(AssetBundle ab,string assetName)
         {
-            //AppFacade.Ins.gMono.StartCoroutine(loadFileSync(url, result));
-        }
-       
-        //从服务器更新资源包
-        public static void UpdateFromServer(string urlpath, Dictionary<string, Hash128> downloadList, System.Action<bool> downloadOver = null)
-        {
-            AppFacade.Ins.gMono.StartCoroutine(downloadAssetbundle(urlpath, downloadList, downloadOver));
-        }
-        //更新manifest
-        public static void UpdateManifestFromServer(string url, System.Action<AssetBundleManifest> manifestCallback)
-        {
-            url = url.Replace("\\", "/");
-            string manifest = url.Substring(url.LastIndexOf("/") + 1);
-            string finalname = url + "/" + manifest;
-            Debug.Log("finalname---" + finalname);
-            AppFacade.Ins.gMono.StartCoroutine(downloadManifest(finalname, (AssetBundleManifest am) =>
+            if (ab != null)
             {
-                if (am != null) { manifestCallback(am); }
+                assetName = assetName.Replace("\\", "/");
+                assetName = assetName.Substring(assetName.LastIndexOf('/')+1);//assetName.Replace(Path.GetExtension(assetName), "");
+                assetName = assetName.Replace(Path.GetExtension(assetName), "");
+                Object[] obs = ab.LoadAllAssets();
+                Object oo = null;
+                for (int i = 0; i < obs.Length; i++)
+                {
+                    if (obs[i].name.Equals(assetName, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        oo = obs[i];
+                    }
+                }
+                return oo;
+            }
+            return null;
+        }
+        public static void LoadBundleFromServer(string url, System.Action<AssetbundleConfig> result)
+        {
+            App.Ins.AppMono.StartCoroutine(downloadFile(url,_=> {
+                result(AssetbundleConfig.FromString(_));
             }));
         }
-        // 协程实现
-        static IEnumerator<YieldInstruction> LoadAsyncCoroutine(string path, System.Action<AssetBundle> callback)
+        public static void LoadAssetversionFromServer(string url, System.Action<AssetVersion> result)
         {
-            AssetBundleCreateRequest abcr = AssetBundle.LoadFromFileAsync(path);
-            yield return abcr;
-            //
-            Object[] obs = abcr.assetBundle.LoadAllAssets();
-
-            callback(abcr.assetBundle);
+            App.Ins.AppMono.StartCoroutine(downloadFile(url, _ => {
+                result(AssetVersion.FromString(_));
+            }));
         }
-     //   private static List<string> rememberList = new List<string>();
-        static AssetBundle LoadSyncCoroutine(string path)
+        public static void LoadPreloadFromServer(string url, System.Action<PreloadConfig> result)
         {
-            Debug.Log("path - " + path);
-
-            AssetBundle ab = AssetbundleHelp.LoadFromFile(path);
-            if (ab == null)
+            App.Ins.AppMono.StartCoroutine(downloadFile(url, _ => {
+                result(PreloadConfig.FromString(_));
+            }));
+        }
+        public static void LoadConfigFromServerSync(string url, System.Action<AssetConfig> result)
+        {
+            AssetVersion version = null;
+            AssetbundleConfig abconfig = null;
+            PreloadConfig preload = null;
+            LoadAssetversionFromServer(url + "/assetVersion.con", _ => version = _);
+            LoadBundleFromServer(url + "bundle.con", _ => abconfig = _);
+            LoadPreloadFromServer(url + "preload.con", _ => preload = _);
+            result(new AssetConfig("", version, abconfig, preload));
+        }
+        //同步
+        public static void LoadFileFromServerSync(string url, System.Action<byte[]> result)
+        {
+            App.Ins.AppMono.StartCoroutine(downloadFile(url, result));
+        }
+        //从服务器更新资
+        public static void UpdateAbbagFromServer(string urlpath, IEnumerable<string> downloadList, System.Action<bool> downloadOver = null)
+        {
+            App.Ins.AppMono.StartCoroutine(downloadAssetbundle(urlpath, downloadList, downloadOver));
+        }
+        static IEnumerator<YieldInstruction> downloadFile(string url, System.Action<string> callback)
+        {
+            WWW www = new WWW(url);
+            while (!www.isDone)
             {
-                Debug.LogError("assetbundle loadFromFile error:");
+                yield return new WaitForSeconds(0.01f);
             }
-            path = path.Replace("/", "\\");
-            string localpath = AssetBundleInfo.assetPath_local;
-            localpath = localpath.Replace("/", "\\");
-            string assetbundlename = path.Replace(localpath + "\\", "");
-            Debug.Log("assetbundlename:" + assetbundlename + " localpath:" + localpath);
-            string[] dependencies = AssetBundleInfo.Manifest.GetAllDependencies(assetbundlename);
-            for (int i = 0; i < dependencies.Length; i++)
-            {
-                Debug.Log("dependencies:" + dependencies[i]);
-                //if(!rememberList.Contains(localpath + "\\" + dependencies[i]))
-                AssetBundle child = AssetbundleHelp.LoadFromFile(localpath + "\\" + dependencies[i]);
-                if (child != null) child.LoadAllAssets();
-            }
-            return ab;
+            if (www.error != null) { Debug.LogError(string.Format("load assetResourceinfo from {0} error:{1}", url, www.error)); yield break; }
+            url = url.Replace("/", "\\");
+            string filename = url.Substring(url.LastIndexOf("\\") + 1);
+            if (callback != null) callback(www.text);
         }
-        static void LoadFromFileDependices(string fullname)
-        {
-            string dir = fullname.Substring(0, fullname.LastIndexOf('/')) + "/";
-            string filename = fullname.Substring(fullname.LastIndexOf('/') + 1);
-            AssetBundle ab = AssetbundleHelp.LoadFromFile(fullname);
-            string[] dependencies = AssetBundleInfo.Manifest.GetAllDependencies(filename);
-            for (int i = 0; i < dependencies.Length; i++)
-            {
-                AssetBundle child = AssetbundleHelp.LoadFromFile(dir + dependencies[i]);
-                child.LoadAllAssets();
-            }
-            ab.LoadAllAssets();
-        }
-        static void LoadAssetbundleSync(string assetbundlePath, System.Action<AssetBundle> callback)
-        {
-            callback(LoadSyncCoroutine(assetbundlePath));
-        }
-        static IEnumerator<YieldInstruction> loadFileSync(string url, System.Action<string> callback)
+        static IEnumerator<YieldInstruction> downloadFile(string url, System.Action<byte[]> callback)
         {
             WWW www = new WWW(url);
             //   WWW www = new WWW(@url);
@@ -98,68 +105,16 @@ namespace NEngine.Assets
             if (www.error != null) { Debug.LogError(string.Format("load assetResourceinfo from {0} error:{1}", url, www.error)); yield break; }
             url = url.Replace("/", "\\");
             string filename = url.Substring(url.LastIndexOf("\\") + 1);
-            saveAsset(filename, www.bytes);
-            if (callback != null) callback(www.text);
-        }
-        static void LoadAssetbundleAsync(string finalPath, System.Action<UnityEngine.AssetBundle> callback)
-        {
-            //  GameLogic.Ins.StartCoroutine(LoadAsyncCoroutine(finalPath, callback));
-        }
-        static IEnumerator<YieldInstruction> downloadAssetbundle1(string path, Dictionary<string, Hash128> downloadList, System.Action<bool> downloadOver = null)
-        {
-            string pathex = "file:///" + path + "/";
-            bool isSuccess = false;
-            string fullname = "";
-            if (downloadList == null || downloadList.Count == 0)
-                isSuccess = true;
-            foreach (KeyValuePair<string, Hash128> tem in downloadList)
-            {
-                fullname = pathex + tem.Key;
-                fullname = fullname.Replace("\\", "/");
-
-                isSuccess = false;
-                WWW www = new WWW(@fullname);
-                Debug.Log("download path:" + fullname);
-                while (!www.isDone)
-                {
-                    Debug.Log("正在下载：" + tem.Key);
-                    yield return new WaitForSeconds(0.02f);
-                }
-                Debug.Log(string.Format("下载 {0} : {1:N1}%", tem.Key, (www.progress * 100)));
-                if (www.error != null)
-                {
-                    if (downloadOver != null) downloadOver(false);
-                    Debug.LogError("www error:" + www.error.ToString());
-                    continue;
-                }
-                if (www.assetBundle != null)
-                {
-
-                    saveAsset(tem.Key, www.bytes);
-                    //     www.assetBundle.LoadAllAssetsAsync();
-                    isSuccess = true;
-
-                    //    www.assetBundle.Unload(false);
-                }
-                // www.Dispose();
-                //if (www.assetBundle != null)
-                //{
-                //    isSuccess = true;
-                //    saveAsset(tem.Key, www.bytes);
-                //    www.assetBundle.LoadAllAssets();
-                //    www.assetBundle.Unload(false);
-                //}
-            }
-            if (downloadOver != null)
-                downloadOver(isSuccess);
-        }
-        static IEnumerator<YieldInstruction> downloadAssetbundle(string path, List<string> downloadList, System.Action<bool> downloadOver = null)
+          //  saveAsset(filename, www.bytes);
+            if (callback != null) callback(www.bytes);
+        }       
+        static IEnumerator<YieldInstruction> downloadAssetbundle(string path, IEnumerable<string> downloadList, System.Action<bool> downloadOver = null)
         {
             WWW www = null;
             string pathex = path + "/";
             bool isSuccess = false;
             string fullname = "";
-            if (downloadList == null || downloadList.Count == 0)
+            if (downloadList == null)
                 isSuccess = true;
             foreach (var tem in downloadList)
             {
@@ -209,7 +164,7 @@ namespace NEngine.Assets
                     string subname = filename.Substring(filename.LastIndexOf("/") + 1);
                     Debug.Log("--------------subname:" + subname);
                     saveAsset(subname, www.bytes);
-
+                    
                     AssetBundleManifest am = www.assetBundle.LoadAsset("AssetBundleManifest", typeof(AssetBundleManifest)) as AssetBundleManifest;
                     www.assetBundle.Unload(false);
                     if (manifestCallback != null) manifestCallback(am);
@@ -218,20 +173,7 @@ namespace NEngine.Assets
         }
         static void saveAsset(string name, byte[] bytes)
         {
-            name = name.Replace("\\", "/");
-            string path = AssetBundleInfo.assetPath_local + "/" + name;
-            Debug.Log("save asset path:" + path);
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-            string dir = path.Substring(0, path.LastIndexOf("/"));
-            Debug.Log("what's the dir:" + dir);
-            if (!Directory.Exists(dir))
-                System.IO.Directory.CreateDirectory(dir);
-            FileStream fs = File.Create(path);
-            fs.Write(bytes, 0, bytes.Length);
-            fs.Close();
+            FileUtil.SaveFile(name, bytes);
         }
     }
     public static class AssetbundleHelp
@@ -264,7 +206,5 @@ namespace NEngine.Assets
             Debug.Log("abbundle包卸载完毕");
          //   AppFacade.Ins.Log(BugType.log, "abbundle包卸载完毕");
         }
-    }
-    */
     }
 }

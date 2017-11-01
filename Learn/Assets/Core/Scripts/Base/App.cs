@@ -20,37 +20,43 @@ public class App
             return _ins;
         }
     }
-    public GameObject AppMono
+    public EmptyBehaviour AppMono
     {
         get
         {
-            if (_mono == null)
-            { _mono = new GameObject("_mono"); GameObject.DontDestroyOnLoad(_mono); }
-            return _mono;
+            return _mono.GetComponent<EmptyBehaviour>();
         }
     }
+   // public 
     private App()
     {
         managerDic = new Dictionary<string, object>();
+        _mono = GameObject.Find("App");
+        if (_mono == null)
+        {
+            _mono = new GameObject("App");     
+        }
+        _mono.AddCompotentIfNoExsit<EmptyBehaviour>();
+        GameObject.DontDestroyOnLoad(_mono);
     }
 
     public void StartUp()
     {
-        App.GetMgr<GameManager>().StartUp(GameEnum.No1); //启动游戏
+        App.GetMgr<GameManager>().StartUp(GameEnum.StartLoading.ToString()); //启动游戏
     }
     #region 获取管理器
     public static T GetMgr<T>() where T : class
     {
-        try
-        {
+        //try
+        //{
             return (T)GetManager(typeof(T));
-        }
-        catch (System.Exception ex)
-        {
+        //}
+        //catch (System.Exception ex)
+        //{
 
-            Debug.LogError(string.Format("get manager null, manager = {0}, error =", typeof(T).Name, ex));
-            return null;
-        }
+        //    Debug.LogError(string.Format("get manager null, manager = {0}, error =", typeof(T).Name, ex.ToString()));
+        //    return null;
+        //}
     }
 
     static object GetManager(System.Type type)
@@ -68,15 +74,4 @@ public class App
 
    
 }
-public static class Util
-{
-    public static void DelayOneFrame(System.Action<object> action, object o = null)
-    {
-        FrameUpdateManager.Instance.StartCoroutine(delay(action, o));
-    }
-    static IEnumerator delay(System.Action<object> action, object o = null)
-    {
-        yield return null;
-        action(o);
-    }
-}
+
