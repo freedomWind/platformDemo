@@ -1,0 +1,30 @@
+ManifestFileVersion: 0
+CRC: 973287194
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 1827aced8751990fc5f4646e02fabebf
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 55c79e8fb15eaee75fd3dbf1fefe03aa
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 20
+  Script: {instanceID: 0}
+- Class: 81
+  Script: {instanceID: 0}
+- Class: 92
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: c4470b538c8a7de4c86b65d0e35edcc3, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 124
+  Script: {instanceID: 0}
+Assets:
+- Assets/ForAssetbundleMaking/ForPackWithNoDependices/No1/Main Camera.prefab
+Dependencies: []

@@ -12,6 +12,8 @@ namespace NEngine.Assets
         public PreloadConfig()
         {
             preLoadList = new List<string>();
+            //test
+            preLoadList.Add("test001");
         }
         public string[] ToArray()
         {

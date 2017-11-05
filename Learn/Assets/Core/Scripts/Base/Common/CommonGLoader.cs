@@ -54,7 +54,7 @@ public class CommonGLoader : IGameLoad
     public override void PullAssets(IEnumerable<string> pulllist)
     {
         Debug.Log("从服务器更新资源");
-        AssetBundleLoader.UpdateAbbagFromServer(AssetConfig.getAssetUrl(curGame.ToString()), pulllist, OnAssetsLoadOver);
+    //    AssetBundleLoader.UpdateAbbagFromServer(AssetConfig.getAssetUrl(curGame.ToString()), pulllist, OnAssetsLoadOver);
     }
     void OnAssetsLoadOver(bool flag)
     {
@@ -85,6 +85,9 @@ public class CommonGLoader : IGameLoad
     }
     public override bool Connect()
     {
+        Texture2D tex = App.GetMgr<ResourceManager>().LoadAsset<Texture2D>("StartLoading_Res/startbg.jpg");
+        Debug.Log("texname = " + tex.name);
+    //    tex = App.GetMgr<ResourceManager>().LoadAsset<Texture2D>("StartLoading_Res/startbg.jpg");
         return true;
     }
 }

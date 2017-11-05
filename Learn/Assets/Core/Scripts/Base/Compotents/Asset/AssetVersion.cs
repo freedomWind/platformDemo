@@ -51,6 +51,35 @@ namespace NEngine.Assets
             rinfo.bundlesInfo = dic;
             return rinfo;
         }
+        public static string[] CompareAndGetUpdateList(AssetVersion oldRes, AssetVersion newRes)
+        {
+            List<string> updateList = new List<string>();
+            if (oldRes == null || newRes == null)
+            {
+                //     Debug.LogError("oldRes or newRes is null");
+                return null;
+            }
+            Debug.Log("newRes.bundlesInfo:" + newRes.bundlesInfo.Count + "  oldRes.bundlesInfo:" + oldRes.bundlesInfo.Count);
+            foreach (KeyValuePair<string, Hash128> tem in newRes.bundlesInfo)
+            {
+                if (oldRes.bundlesInfo == null)
+                {
+                    string[] array = new string[newRes.bundlesInfo.Keys.Count];
+                    newRes.bundlesInfo.Keys.CopyTo(array, 0);
+                    return array;
+                }
+                if (!oldRes.bundlesInfo.ContainsKey(tem.Key))
+                {
+                    Debug.Log("新增了一个包：" + tem.Key);
+                    updateList.Add(tem.Key);
+                }
+                else
+                {
+                    if (tem.Value != oldRes.bundlesInfo[tem.Key]) { Debug.Log("资源包有修改：" + tem.Key); updateList.Add(tem.Key); }
+                }
+            }
+            return updateList.ToArray();
+        }
         public static void CompareAndGetUpdateList(AssetVersion oldRes, AssetVersion newRes, out Dictionary<string, Hash128> updateList)
         {
             updateList = new Dictionary<string, Hash128>();

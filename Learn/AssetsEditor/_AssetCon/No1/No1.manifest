@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 2250905412
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: no1/cube.unity3d
+      Dependencies: {}
+    Info_1:
+      Name: no1/main camera.unity3d
+      Dependencies: {}

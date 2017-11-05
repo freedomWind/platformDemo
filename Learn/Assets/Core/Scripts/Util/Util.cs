@@ -30,16 +30,24 @@ public static class Util
             return "";
         }
     }
+    public static string appDataPath
+    {
+        get
+        {
+#if UNITY_EDITOR || UNITY_WIN
+            return Application.streamingAssetsPath;
+#elif UNITY_IOS
+            return Application.dataPath +"/Raw";
+#elif UNITY_ANDROID
+            return "jar:file://"+ Application.dataPath +"!/assets";
+#endif
+        }
+    }
+    
     public static string GetFileName(string fullname)
     {
         fullname = fullname.Replace("\\", "/");
         return fullname.Substring(fullname.LastIndexOf('/') + 1);
-    }
-    public static string ToJson(object obj)
-    {
-        string str = LitJson.JsonMapper.ToJson(obj);
-        str = System.Text.UTF8Encoding.UTF8.GetString(System.Text.UTF8Encoding.UTF8.GetBytes(str));
-        return str;
     }
     public static T AddCompotentIfNoExsit<T>(this Transform trans) where T : MonoBehaviour
     {

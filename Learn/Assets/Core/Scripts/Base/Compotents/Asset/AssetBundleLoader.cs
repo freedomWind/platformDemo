@@ -38,8 +38,10 @@ namespace NEngine.Assets
                     if (obs[i].name.Equals(assetName, System.StringComparison.OrdinalIgnoreCase))
                     {
                         oo = obs[i];
+                        break;
                     }
                 }
+             //   ab.Unload(false);
                 return oo;
             }
             return null;
@@ -174,6 +176,25 @@ namespace NEngine.Assets
         static void saveAsset(string name, byte[] bytes)
         {
             FileUtil.SaveFile(name, bytes);
+        }
+    }
+    public static class Downloader
+    {
+        public static void DownLoaderFile(string url, System.Action<byte[]> callback)
+        {
+            App.Ins.AppMono.StartCoroutine(downloadFile(url, callback));
+        }
+        static IEnumerator<YieldInstruction> downloadFile(string url, System.Action<byte[]> callback)
+        {
+            WWW www = new WWW(@url);
+            while (!www.isDone)
+            {
+                yield return new WaitForSeconds(0.01f);
+            }
+            if (www.error != "") { Debug.LogError(string.Format("load assetResourceinfo from {0} error:{1}", url, www.error)); yield break; }
+            url = url.Replace("/", "\\");
+            string filename = url.Substring(url.LastIndexOf("\\") + 1);
+            if (callback != null) callback(www.bytes);
         }
     }
     public static class AssetbundleHelp

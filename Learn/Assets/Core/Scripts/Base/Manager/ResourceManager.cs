@@ -34,21 +34,19 @@ namespace NEngine.Assets
         /// <typeparam name="T"></typeparam>
         /// <param name="name"></param>
         /// <returns></returns>
-        public T LoadAsset<T>(string name) where T:UnityEngine.Object
+        public T LoadAsset<T>(string name) where T : UnityEngine.Object
         {
-        //    try
-       //     {
-                T p = null;
+            try
+            {
                 Object oo = LoadAsset(name);
                 if (oo == null) return null;
-                p = GameObject.Instantiate(oo) as T;
-                return p;
-            //}
-            //catch (System.Exception ex)
-            //{
-            //    Debug.LogError("loadasset error = " + ex);
-            //    return null;
-            //}
+                return oo as T;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("loadasset error = " + ex);
+                return null;
+            }
         }
         Object loadFromRes(string name)
         {

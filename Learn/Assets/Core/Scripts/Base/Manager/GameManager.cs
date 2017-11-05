@@ -6,10 +6,8 @@ namespace NEngine.Game
 {
     public enum GameEnum
     {
-        StartLoading,  //启动加载部分
-        Lobby,         //主大厅
-        Majhong,       //麻将
-        NiuNiu,        //牛牛
+        GameFirst,
+        StartLoading,
 
     }
     public class GameManager
@@ -21,7 +19,9 @@ namespace NEngine.Game
         {
             _dic = new Dictionary<string, IGameBase>();
             _dic.Add(GameEnum.StartLoading.ToString(), new StartLoading(GameEnum.StartLoading.ToString(), new CommonGLoader(GameEnum.StartLoading)));
-           // _dic.Add(GameEnum.Lobby.ToString(),new )
+            _dic.Add(GameEnum.GameFirst.ToString(), new GameFirst(GameEnum.GameFirst.ToString(), new GameFirstLoader()));
+            
+            // _dic.Add(GameEnum.Lobby.ToString(),new )
         }
         public IGameBase this[string name]{get{ IGameBase gb = null; _dic.TryGetValue(name, out gb); return gb; } }
         public void StartUp(string gameName)

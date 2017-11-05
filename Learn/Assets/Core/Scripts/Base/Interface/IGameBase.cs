@@ -13,7 +13,7 @@ namespace NEngine.Game
         /// <summary>
         /// 启动游戏
         /// </summary>
-        public virtual void StartUp()
+        public void StartUp()
         {
             if (loader.isFirstLoad)
             {
@@ -161,7 +161,7 @@ namespace NEngine.Game
         {
             Debug.Log("检测资源更新");
             updatelist = null;
-            return false;
+            return true;
         }
         public virtual void PullAssets(IEnumerable<string> pulllist)  //拉取资源
         {

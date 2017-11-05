@@ -30,26 +30,26 @@ public class StartLoading : IGameBase
     ///预加载
     ///连接服务器
     /// </summary>
-    public override void StartUp()
-    {
-        LoadScene(0);
-        if (loader.CheckGameUpdate())  //游戏逻辑版本更新
-        {
-            loader.DoGameUpdate(() => { StartUp(); });
-        }
-        string[] games = System.Enum.GetNames(typeof(GameEnum));
-        for (int i = 0; i < games.Length; i++)
-        {
-            IGameBase gb = App.GetMgr<GameManager>()[games[i]];
-            if (gb == null) continue;
-            gb.GameAssetsUpdate();
-        }
-        loader.PreLoadAssets();
-        if (loader.Connect())
-        {
-            isLoadingOver = true;
-        }
-    }
+    //public override void StartUp()
+    //{
+    //    LoadScene(0);
+    //    if (loader.CheckGameUpdate())  //游戏逻辑版本更新
+    //    {
+    //        loader.DoGameUpdate(() => { StartUp(); });
+    //    }
+    //    string[] games = System.Enum.GetNames(typeof(GameEnum));
+    //    for (int i = 0; i < games.Length; i++)
+    //    {
+    //        IGameBase gb = App.GetMgr<GameManager>()[games[i]];
+    //        if (gb == null) continue;
+    //        gb.GameAssetsUpdate();
+    //    }
+    //    loader.PreLoadAssets();
+    //    if (loader.Connect())
+    //    {
+    //        isLoadingOver = true;
+    //    }
+    //}
 
     /// <summary>
     /// 游戏事件

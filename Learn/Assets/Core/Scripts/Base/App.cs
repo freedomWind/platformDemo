@@ -42,7 +42,8 @@ public class App
 
     public void StartUp()
     {
-        App.GetMgr<GameManager>().StartUp(GameEnum.StartLoading.ToString()); //启动游戏
+        // App.GetMgr<GameManager>().StartUp(GameEnum.StartLoading.ToString()); //启动游戏
+        App.GetMgr<GameManager>().StartUp(GameEnum.GameFirst.ToString());
     }
     #region 获取管理器
     public static T GetMgr<T>() where T : class

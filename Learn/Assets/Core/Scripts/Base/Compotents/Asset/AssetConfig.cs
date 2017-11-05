@@ -8,24 +8,7 @@ namespace NEngine.Assets
     /// 资源配置文件
     /// </summary>
     public class AssetConfig
-    {
-        public static string getAssetbundleFloderPath(string gName)            //ab包目录
-        {
-            return "";
-        }
-        public static string getAssetConfigPath_local(string gName)             //本地资源配置文件目录
-        {
-            return "";
-        }
-        public static string getAssetConfigPath_ser(string gName)               //服务器端下载存放目录
-        {
-            return "";
-        }
-        public static string getAssetUrl(string gName)                          //服务器端资源地址
-        {
-            return "";
-        }
-
+    { 
         private string gName;
         public AssetConfig(string gamename,AssetVersion aversion,AssetbundleConfig abconfig,PreloadConfig preloadConfig)
         {
@@ -36,8 +19,7 @@ namespace NEngine.Assets
         }
         AssetVersion assetVersion;
         AssetbundleConfig abConfig;
-        PreloadConfig preloadConfig;
-       // GameAssetConfig assetConfig;
+        PreloadConfig preloadConfig;    
 
         /// <summary>
         /// 通过资源路径名得到ab包名
@@ -79,14 +61,6 @@ namespace NEngine.Assets
                 }
                 return _manifest;
             }
-        }
-        public void SetManifest(AssetBundleManifest am)
-        {
-            _manifest = am;
-        }
-        public AssetBundle LoadAssetBundle(string name) 
-        {
-            return null;
         }
     }
 }
